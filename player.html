@@ -1,0 +1,148 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <title>Page Title</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0">
+            <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+
+    <style>
+        *{
+            font-family: 'Roboto', sans-serif;
+            box-sizing: border-box;
+        }
+        body,
+        html,
+        iframe {
+            margin: auto;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            color: white;
+        }
+        
+        .overlay {
+            position: fixed;
+            width: 100%;
+            height: 40px;
+            background: -moz-linear-gradient(top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%);
+background: -webkit-linear-gradient(top, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%);
+background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=0 );
+        }
+        
+        .title{
+            position: fixed;
+            top: 10px;
+            left: 10px;
+        }
+        #progressBar {
+            width: 100%;
+            height: 3px;
+            background-color: #fff;
+            display: none;
+            margin-top: 1px;
+        }
+        
+        #progressBar div {
+            height: 100%;
+            width: 0;
+            background-color: #0058ff;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+
+        <div id="progressBar">
+            <div></div>
+        </div>
+        <div class="title"></div>
+    </div>
+    <div id="player"></div>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>
+        var tag = document.createElement('script');
+
+        tag.src = "//www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        var id = localStorage.getItem("videoID");
+        var player;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '720',
+                width: '1280',
+                videoId: id,
+                playerVars: {
+                    'autoplay': 0,
+                    'list': 'PLnXpFAQj3UqLObTzL4kwHAaMQDgbiZoGT',
+                    'controls': 0,
+                    'rel': 0,
+                    'fs': 0,
+                    'iv_load_policy': 3,
+                    'showinfo' : 0,
+                },
+                events: {
+                    'onStateChange': function(event) {
+                        onPlayerStateChange(event);
+                        if (event.data == YT.PlayerState.PLAYING) {
+                            myFunction();
+                            
+                        }
+                    }
+                },
+
+
+            });
+        }
+
+        function myFunction() {
+
+            localStorage.setItem("videoID", player.getVideoData().video_id);
+            console.log("updated link");
+            $("div.title").text(player.getVideoData().title + " | BrenIsDank");
+        }
+
+        function progress(percent, $element) {
+            var progressBarWidth = percent * $element.width() / 100;
+
+            // $element.find('div').animate({ width: progressBarWidth }, 500).html(percent + "%&nbsp;");
+
+            $element.find('div').animate({
+                width: progressBarWidth
+            });
+        }
+
+
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+
+                $('#progressBar').show();
+                var playerTotalTime = player.getDuration();
+
+                mytimer = setInterval(function() {
+                    var playerCurrentTime = player.getCurrentTime();
+
+                    var playerTimeDifference = (playerCurrentTime / playerTotalTime) * 100;
+
+
+                    progress(playerTimeDifference, $('#progressBar'));
+                }, 1000);
+            } else {
+
+                clearTimeout(mytimer);
+                $('#progressBar').hide();
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
